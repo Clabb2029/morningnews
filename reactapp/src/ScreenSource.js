@@ -12,30 +12,50 @@ function ScreenSource(props) {
 
 
   useEffect(() => {
-    const APIResultsLoading = async() => {
-      var langue = 'fr'
-      var country = 'fr'
-        
-      if(selectedLang == 'en'){
-        var langue = 'en'
-        var country = 'us'
-      }
-      props.changeLang(selectedLang)
-      const data = await fetch(`https://newsapi.org/v2/sources?language=${langue}&country=${country}&apiKey=3aa864285fa24406abfccc0ab7f550d6`)
-      const body = await data.json()
-      setSourceList(body.sources)
+    const findLang = async() => {
+     
+      const reqFind = await fetch(`/user-lang?token=${props.token}`)
+      const resultFind = await reqFind.json()
+      setSelectLang(body.sources)
     }
 
-    APIResultsLoading()
+    findLang()
   }, [selectedLang])
+
+
+  var updateLang = async (lang) => {
+    setSelectedLang(lang)
+
+    const regLang = await fetch('/user-lang', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-ww-form-urlencoded'},
+      body: `lang=${lang}&token=${props.token}`
+    })
+  }
+
+
+  var styleBorderFr = {width:'40px', margin:'10px',cursor:'pointer'}
+  
+  if (selectedLang == 'fr') {
+    styleBorderFr.border = '1px solid black'
+  }
+
+
+  var styleBorderEn = {width:'40px', margin:'10px',cursor:'pointer'}
+
+  if (selectedLang == 'en') {
+    styleBorderEn.border = '1px solid black'
+  }
+
+
 
   return (
     <div>
         <Nav/>
        
        <div style={{display:'flex', justifyContent:'center', alignItems:'center'}} className="Banner">
-          <img style={{width:'40px', margin:'10px',cursor:'pointer'}} src='/images/fr.png' onClick={() => setSelectedLang('fr')} />
-          <img style={{width:'40px', margin:'10px',cursor:'pointer'}} src='/images/uk.png' onClick={() => setSelectedLang('en')} /> 
+          <img style={styleBorderFr} src='/images/fr.png' onClick={() => updateLang('fr')} />
+          <img style={styleBorderEn} src='/images/uk.png' onClick={() => updateLang('en')} /> 
         </div>
 
        <div className="HomeThemes">
@@ -62,7 +82,7 @@ function ScreenSource(props) {
 }
 
 function mapStateToProps(state){
-  return {selectedLang: state.selectedLang}
+  return {selectedLang: state.selectedLang, token: state.token}
 }
 
 function mapDispatchToProps(dispatch){

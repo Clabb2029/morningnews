@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import './App.css';
 import { Card, Icon, Modal} from 'antd';
 import Nav from './Nav'
@@ -11,6 +11,38 @@ function ScreenMyArticles(props) {
   const [visible, setVisible] = useState(false)
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
+
+  const [langFiltre, setLangFiltre] = useState('')
+
+
+  useEffect(() => {
+    const findArticlesWishList = async () => {
+      const dataWishList = await fetch(`/wishlist-article?lang=${langFiltre}token=${props.token}`)
+      const body = await dataWishList.json()
+
+      props.saveArticles(body.articles)
+    }
+
+    findArticlesWishList()    
+  },[langFiltre])
+
+
+
+  var deleteArticle = async (title) => {
+
+    props.deleteToWishList(title)
+
+    const data = await fetch('/wishlist-article', {
+      method: 'DELETE',
+      headers : {'Content-Type': 'application/x-ww-form-urlencoded'},
+      body: `title=${title}&token=${props.token}`
+    })
+  }
+
+  var filtreLang = (lang) => {
+    setLangFiltre(lang)
+  }
+
 
 
 
@@ -41,7 +73,10 @@ function ScreenMyArticles(props) {
          
             <Nav/>
 
-            <div className="Banner"/>
+            <div style={{display:'flex', justifyContent:'center', alignItems:'center'}} className="Banner">
+              <img style={{width:'40px', margin:'10px',cursor:'pointer'}} src='/images/fr.png' onClick={() => filtreLang('fr')} />
+              <img style={{width:'40px', margin:'10px',cursor:'pointer'}} src='/images/uk.png' onClick={() => filtreLang('en')} /> 
+            </div>
 
             {noArticles}
 
@@ -67,7 +102,7 @@ function ScreenMyArticles(props) {
                     }
                     actions={[
                         <Icon type="read" key="ellipsis2" onClick={() => showModal(article.title,article.content)} />,
-                        <Icon type="delete" key="ellipsis" onClick={() => props.deleteToWishList(article.title)} />
+                        <Icon type="delete" key="ellipsis" onClick={() => (deleteArticle(), deleteWishList(article.title))} />
                     ]}
                     >
 
@@ -105,7 +140,7 @@ function ScreenMyArticles(props) {
 }
 
 function mapStateToProps(state){
-  return {myArticles: state.wishList}
+  return {myArticles: state.wishList, token: state.token}
 }
 
 function mapDispatchToProps(dispatch){
@@ -113,6 +148,11 @@ function mapDispatchToProps(dispatch){
     deleteToWishList: function(articleTitle){
       dispatch({type: 'deleteArticle',
         title: articleTitle
+      })
+    },
+    saveArticles: function(articles){
+      dispatch({type: 'saveArticles',
+        articles: articles
       })
     }
   }

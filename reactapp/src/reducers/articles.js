@@ -1,6 +1,10 @@
 export default function(wishList = [], action){
 
-    if(action.type == 'addArticle'){
+
+    if(action.type == 'saveArticles'){
+        return action.articles
+
+    } else if(action.type == 'addArticle'){
         var wishListCopy = [...wishList]
 
         var findArticle = false
